@@ -57,7 +57,7 @@ const Form = () => {
 
                 <div className='input-div'>
                     <label htmlFor="cellphone">Cellphone: </label>
-                    <InputMask mask="(99) 99999-9999" type="text" id="phone" {...register('cellphone')} />
+                    <InputMask mask="(99) 99999-9999" type="text" id="cellphone" {...register('cellphone')} />
                     {errors.cellphone && <span>{errors.cellphone.message}</span>}
                 </div>
 

@@ -3,27 +3,25 @@ import './styles.css'
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import InputMask from 'react-input-mask';
+import { useState } from 'react';
 
 const UserSchema = z.object({
     name: z.string().trim().min(2, "Name is required."),
     birthday: z.coerce.date().max(new Date(), "Invalid date."),
-    email: z.string().trim().email("Invalid Email."),
+    email: z.string().trim().email("Invalid Email.").transform((val) => val.toLowerCase),
     cellphone: z.string().trim().regex(/^\(?\d{2}\)?[-.\s]?\d{5}[-.\s]?\d{4}$/, "Invalid Cellphone."),
     password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/, "The password must contain a uppercase and lowercase letter, a number and a symbol."),
     confirmPassword: z.string()
-}).superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-        ctx.addIssue({
-            code: "custom",
-            message: "The passwords did not match.",
-            path: ['confirmPassword']
-        });
-    }
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });
 
 type UserFormData = z.infer<typeof UserSchema>
 
 const Form = () => {
+
+    const [formKey, setFormKey] = useState(0);
 
     const { register, handleSubmit, reset, formState: { errors, isSubmitSuccessful } } = useForm<UserFormData>({
         resolver: zodResolver(UserSchema)
@@ -31,11 +29,12 @@ const Form = () => {
 
     const onSubmit: SubmitHandler<UserFormData> = (data) => {
         console.log(data);
-        reset();
+        reset()
+        setFormKey(prevKey => prevKey + 1);
     }
 
     return (
-        <div className='form-div'>
+        <div className='form-div' key={formKey}>
             <h2>Register User</h2>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className='input-div'>
